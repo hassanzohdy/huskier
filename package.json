@@ -18,8 +18,7 @@
         "test": "jest ./tests",
         "test:coverage": "jest ./tests --coverage",
         "test:watch": "jest ./tests --watch",
-        "test:file": "jest",
-        "prepare": "husky install"
+        "test:file": "jest"
     },
     "devDependencies": {
         "@types/node": "^18.16.3",
