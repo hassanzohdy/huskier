@@ -8,8 +8,8 @@
         "huskier": "./src/cjs/index.js"
     },
     "dependencies": {
-        "@mongez/fs": "^3.0.1",
         "chalk": "^4.1.2",
+        "@mongez/fs": "^3.0.1",
         "husky": ">=8.0.3"
     },
     "scripts": {
