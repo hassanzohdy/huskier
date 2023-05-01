@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { getJsonFile } from "@mongez/fs";
 import chalk from "chalk";
 import { cwd } from "process";

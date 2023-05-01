@@ -1,8 +1,3 @@
-#!/usr/bin/env node
-
-// this is a bash file written in typescript
-// it should call npx husky-init and then npx husky set .husky/pre-commit "npx huskier"
-// starting from this line
 import { getJsonFile, putJsonFile } from "@mongez/fs";
 import chalk from "chalk";
 import { execSync } from "child_process";
