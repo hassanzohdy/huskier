@@ -1,10 +1,11 @@
 {
     "name": "@mongez/huskier",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "A wrapper for husky to make it easier to use with a nice summary.",
     "main": "src/index.ts",
     "author": "hassanzohdy",
     "bin": {
+        "huskier-init": "./src/cjs/init.js",
         "huskier": "./src/cjs/index.js"
     },
     "dependencies": {
