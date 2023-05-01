@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-require("./src/cjs/init.js");
+require("./cjs/init.js");
