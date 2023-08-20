@@ -4,7 +4,7 @@ import { execSync } from "child_process";
 import { cwd } from "process";
 
 const huskyInit =
-  'npx husky-init && npx husky set .husky/pre-commit "npx huskier --staged"';
+  'npx husky-init && npx husky set .husky/pre-commit "npx huskier --staged --color"';
 
 execSync(huskyInit, { stdio: "inherit" });
 
