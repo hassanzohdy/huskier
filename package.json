@@ -1,6 +1,6 @@
 {
     "name": "@mongez/huskier",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "description": "A wrapper for husky to make it easier to use with a nice summary.",
     "main": "src/index.ts",
     "author": {
@@ -13,7 +13,7 @@
     },
     "dependencies": {
         "chalk": "^4.1.2",
-        "@mongez/fs": "^3.0.3",
+        "@mongez/fs": "^3.0.4",
         "husky": ">=8.0.3"
     },
     "scripts": {
