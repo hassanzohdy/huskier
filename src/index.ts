@@ -1,7 +1,10 @@
 import { getJsonFile } from "@mongez/fs";
-import chalk from "chalk";
 import { cwd } from "process";
-import { executePreCommit } from "./hooks/pre-commit";
+import {
+  executePreCommit,
+  executePreCommitInParallel,
+} from "./hooks/pre-commit";
+import { colors } from "@mongez/copper";
 
 const packageJson = getJsonFile(cwd() + "/package.json");
 
@@ -9,13 +12,13 @@ const packageJson = getJsonFile(cwd() + "/package.json");
 const huskier = packageJson.huskier;
 
 if (!huskier) {
-  console.log(chalk.red("huskier key ") + "is missing from package.json");
+  console.log(colors.red("huskier key ") + "is missing from package.json");
   process.exit(1);
 }
 
 // it should be an object, containing `hooks`, for now the hooks contains only `pre-commit`
 if (!huskier.hooks) {
-  console.log(chalk.red("huskier.hooks ") + "is missing from package.json");
+  console.log(colors.red("huskier.hooks ") + "is missing from package.json");
   process.exit(1);
 }
 
@@ -27,10 +30,16 @@ if (staged) {
   // check first if the pre-commit key exists
   if (!huskier.hooks["pre-commit"]) {
     console.log(
-      chalk.red("huskier.hooks.pre-commit ") + "is missing from package.json"
+      colors.red("huskier.hooks.pre-commit ") + "is missing from package.json"
     );
     process.exit(1);
   }
 
-  executePreCommit(huskier.hooks["pre-commit"]);
+  const parallel = huskier.parallel ?? true;
+
+  if (parallel) {
+    executePreCommitInParallel(huskier.hooks["pre-commit"]);
+  } else {
+    executePreCommit(huskier.hooks["pre-commit"]);
+  }
 }

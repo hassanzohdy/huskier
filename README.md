@@ -48,6 +48,21 @@ ny failed command will will stop executing the rest of the commands, and will sh
 
 At the end of commands execution, huskier will show you a summary of total executed commands, total time it took to run all commands, and number of success and failed commands.
 
+## Parallel Execution
+
+If you want to execute all commands in parallel, you can use `parallel` option to be `true` in `huskier` key in your `package.json` file.
+
+```json
+{
+  "huskier": {
+    "parallel": true,
+    "pre-commit": ["prettier --write .", "eslint . --fix"]
+  }
+}
+```
+
+> Starting from version 1.1, parallel is set to `true` by default.
+
 ## Committing
 
 Now whenever you commit, husky will run these commands before committing.
