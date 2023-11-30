@@ -1,16 +1,68 @@
 #!/usr/bin/env node
-
 import { colors } from "@mongez/copper";
-import { exec as execCb, execSync } from "child_process";
-import { promisify } from "util";
-
-const exec = promisify(execCb);
+import { spawn } from "child_process";
 
 interface ExecutedInfo {
-  commands: number;
-  success: number;
-  failed: number;
-  time: number;
+    commands: number;
+    success: number;
+    failed: number;
+    time: number;
+}
+
+export async function executePreCommitInParallel(commands: string[]) {
+    let totalExecuted: ExecutedInfo = {
+        commands: 0,
+        success: 0,
+        failed: 0,
+        time: 0,
+    };
+
+    const commandPromises = commands.map((command, index) => {
+        return new Promise((resolve) => {
+            console.log(
+                colors.yellow("[STARTED]") +
+                " " +
+                `(${index + 1}/${commands.length}) ` +
+                colors.whiteBright(command)
+            );
+            const time = Date.now();
+
+            const child = spawn(command, { shell: true, stdio: [process.stdin, process.stdout, process.stderr] });
+
+            child.on('exit', (code: number) => {
+                totalExecuted.commands++;
+                totalExecuted.time += Date.now() - time;
+                if (code === 0) {
+                    totalExecuted.success++;
+                    console.log(
+                        colors.green("[SUCCESS]") +
+                        " " +
+                        `(${index + 1}/${commands.length}) ` +
+                        colors.whiteBright(command) +
+                        " " +
+                        colors.gray(`(${Date.now() - time}ms)`)
+                    );
+                    resolve(null);
+                } else {
+                    totalExecuted.failed++;
+                    console.log(
+                        colors.red("[FAILED]") +
+                        " " +
+                        `(${index + 1}/${commands.length}) ` +
+                        colors.whiteBright(command) +
+                        " " +
+                        colors.gray(`(${Date.now() - time}ms)`)
+                    );
+                    resolve(null);
+                }
+            });
+        });
+    });
+
+    await Promise.allSettled(commandPromises);
+
+    // now exit the process
+    process.exit(totalExecuted.failed > 0 ? 1 : 0);
 }
 
 export function executePreCommit(commands: string[]) {
@@ -113,59 +165,6 @@ export function executePreCommit(commands: string[]) {
         colors.red(totalExecuted.failed)
     );
   }
-
-  // now exit the process
-  process.exit(totalExecuted.failed > 0 ? 1 : 0);
-}
-
-export async function executePreCommitInParallel(commands: string[]) {
-  let totalExecuted: ExecutedInfo = {
-    commands: 0,
-    success: 0,
-    failed: 0,
-    time: 0,
-  };
-
-  const promises = commands.map(async (command, index) => {
-    console.log(
-      colors.yellow("[STARTED]") +
-        " " +
-        `(${index + 1}/${commands.length}) ` +
-        colors.whiteBright(command)
-    );
-    const time = Date.now();
-    try {
-      const { stdout, stderr } = await exec(command);
-      console.log(stdout);
-      console.error(stderr);
-      totalExecuted.commands++;
-      totalExecuted.success++;
-      totalExecuted.time += Date.now() - time;
-      console.log(
-        colors.green("[SUCCESS]") +
-          " " +
-          `(${index + 1}/${commands.length}) ` +
-          colors.whiteBright(command) +
-          " " +
-          colors.gray(`(${Date.now() - time}ms)`)
-      );
-    } catch (error) {
-      totalExecuted.commands++;
-      totalExecuted.failed++;
-      totalExecuted.time += Date.now() - time;
-      console.log(
-        colors.red("[FAILED]") +
-          " " +
-          `(${index + 1}/${commands.length}) ` +
-          colors.whiteBright(command) +
-          " " +
-          colors.gray(`(${Date.now() - time}ms)`)
-      );
-    }
-  });
-
-  await Promise.allSettled(promises);
-  console.log(totalExecuted); // print total statistics when all commands have finished
 
   // now exit the process
   process.exit(totalExecuted.failed > 0 ? 1 : 0);
