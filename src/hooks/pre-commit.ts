@@ -166,4 +166,7 @@ export async function executePreCommitInParallel(commands: string[]) {
 
   await Promise.allSettled(promises);
   console.log(totalExecuted); // print total statistics when all commands have finished
+
+  // now exit the process
+  process.exit(totalExecuted.failed > 0 ? 1 : 0);
 }
