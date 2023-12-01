@@ -16,6 +16,7 @@ if (!packageJson.huskier) {
     hooks: {
       "pre-commit": [],
     },
+    parallel: true,
   };
   console.log(
     `Added ${chalk.yellow("huskier")} key to ${chalk.yellow(`package.json`)}`
