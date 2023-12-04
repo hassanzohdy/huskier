@@ -5,41 +5,53 @@ import {
   executePreCommitInParallel,
 } from "./hooks/pre-commit";
 import { colors } from "@mongez/copper";
+import * as p from "@clack/prompts";
+import { log, note, intro, outro } from "@clack/prompts";
 
-const packageJson = getJsonFile(cwd() + "/package.json");
-
-// get from the package key called "huskier"
-const huskier = packageJson.huskier;
-
-if (!huskier) {
-  console.log(colors.red("huskier key ") + "is missing from package.json");
-  process.exit(1);
+async function main() {
+  await executePreCommitInParallel([
+    "echo 12",
+    "echo 13",
+    "echo 14",
+  ]);
 }
 
-// it should be an object, containing `hooks`, for now the hooks contains only `pre-commit`
-if (!huskier.hooks) {
-  console.log(colors.red("huskier.hooks ") + "is missing from package.json");
-  process.exit(1);
-}
+main();
 
-// now check if the --staged flag is passed
-const staged = process.argv.includes("--staged");
+// const packageJson = getJsonFile(cwd() + "/package.json");
 
-// if staged is passed, we should only execute the commands that are under the `pre-commit` key
-if (staged) {
-  // check first if the pre-commit key exists
-  if (!huskier.hooks["pre-commit"]) {
-    console.log(
-      colors.red("huskier.hooks.pre-commit ") + "is missing from package.json"
-    );
-    process.exit(1);
-  }
+// // get from the package key called "huskier"
+// const huskier = packageJson.huskier;
 
-  const parallel = huskier.parallel ?? true;
+// if (!huskier) {
+//   console.log(colors.red("huskier key ") + "is missing from package.json");
+//   process.exit(1);
+// }
 
-  if (parallel) {
-    executePreCommitInParallel(huskier.hooks["pre-commit"]);
-  } else {
-    executePreCommit(huskier.hooks["pre-commit"]);
-  }
-}
+// // it should be an object, containing `hooks`, for now the hooks contains only `pre-commit`
+// if (!huskier.hooks) {
+//   console.log(colors.red("huskier.hooks ") + "is missing from package.json");
+//   process.exit(1);
+// }
+
+// // now check if the --staged flag is passed
+// const staged = process.argv.includes("--staged");
+
+// // if staged is passed, we should only execute the commands that are under the `pre-commit` key
+// if (staged) {
+//   // check first if the pre-commit key exists
+//   if (!huskier.hooks["pre-commit"]) {
+//     console.log(
+//       colors.red("huskier.hooks.pre-commit ") + "is missing from package.json"
+//     );
+//     process.exit(1);
+//   }
+
+//   const parallel = huskier.parallel ?? true;
+
+//   if (parallel) {
+//     executePreCommitInParallel(huskier.hooks["pre-commit"]);
+//   } else {
+//     executePreCommit(huskier.hooks["pre-commit"]);
+//   }
+// }

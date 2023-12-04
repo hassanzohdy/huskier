@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { colors } from "@mongez/copper";
 import { execSync, spawn } from "child_process";
+import { log, intro, outro, spinner } from "@clack/prompts";
 
 interface ExecutedInfo {
   commands: number;
@@ -9,7 +10,16 @@ interface ExecutedInfo {
   time: number;
 }
 
-export async function executePreCommitInParallel(commands: string[]) {
+interface CommandResult {
+  command: string;
+  index: number;
+  status: string;
+  output: string;
+}
+
+export async function executePreCommitInParallel(
+  commands: string[]
+): Promise<CommandResult[]> {
   let totalExecuted: ExecutedInfo = {
     commands: 0,
     success: 0,
@@ -17,19 +27,33 @@ export async function executePreCommitInParallel(commands: string[]) {
     time: 0,
   };
 
+  const commandResults: CommandResult[] = [];
+
+  intro("Executing pre-commit hooks in parallel...");
+
   const commandPromises = commands.map((command, index) => {
     return new Promise((resolve) => {
-      console.log(
+      log.info(
         colors.yellow("[STARTED]") +
           " " +
           `(${index + 1}/${commands.length}) ` +
           colors.whiteBright(command)
       );
       const time = Date.now();
+      let stdout = "";
+      let stderr = "";
 
       const child = spawn(command, {
         shell: true,
-        stdio: [process.stdin, process.stdout, process.stderr],
+        env: { ...process.env, FORCE_COLOR: true },
+      } as any);
+
+      child.stdout.on("data", (data) => {
+        stdout += data;
+      });
+
+      child.stderr.on("data", (data) => {
+        stderr += data;
       });
 
       child.on("exit", (code: number) => {
@@ -37,52 +61,70 @@ export async function executePreCommitInParallel(commands: string[]) {
         totalExecuted.time += Date.now() - time;
         if (code === 0) {
           totalExecuted.success++;
-          console.log(
-            colors.green("[SUCCESS]") +
-              " " +
-              `(${index + 1}/${commands.length}) ` +
-              colors.whiteBright(command) +
-              " " +
-              colors.gray(`(${Date.now() - time}ms)`)
-          );
+          commandResults.push({
+            command: command,
+            index: index,
+            status: "Success",
+            output: stdout,
+          });
           resolve(null);
         } else {
           totalExecuted.failed++;
-          console.log(
-            colors.red("[FAILED]") +
-              " " +
-              `(${index + 1}/${commands.length}) ` +
-              colors.whiteBright(command) +
-              " " +
-              colors.gray(`(${Date.now() - time}ms)`)
-          );
+          commandResults.push({
+            command: command,
+            index: index,
+            status: "Failed",
+            output: stderr,
+          });
           resolve(null);
         }
       });
     });
   });
 
-  await Promise.allSettled(commandPromises);
+  await Promise.all(commandPromises);
 
-  if (totalExecuted.failed === 0) {
-    console.log(
-      colors.green("[SUCCESS]") +
-        " " +
-        colors.whiteBright("All commands executed successfully")
-    );
-  } else {
-    console.log(
-      colors.red("[FAILED]") +
-        " " +
-        `[${totalExecuted.failed}/${totalExecuted.commands}] commands failed`
-    );
+  for (let i = 0; i < commandResults.length; i++) {
+    const result = commandResults[i];
+    if (result.status === "Failed") {
+      log.error(
+        colors.red("[FAILED]") +
+          " " +
+          `(${result.index + 1}/${commands.length}) ` +
+          colors.whiteBright(result.command) +
+          " " +
+          colors.gray(`(${result.output})`)
+      );
+    } else {
+      log.success(
+        colors.green("[SUCCESS]") +
+          " " +
+          `(${result.index + 1}/${commands.length}) ` +
+          colors.whiteBright(result.command)
+      );
+    }
   }
+
+  const result =
+    totalExecuted.failed > 0
+      ? colors.redBright(
+          `${totalExecuted.failed}/${totalExecuted.commands} commands failed`
+        )
+      : colors.greenBright(
+          `${totalExecuted.success}/${totalExecuted.commands} commands succeeded`
+        );
+
+  outro(
+    `Completed execution of ${result} in ${colors.yellow(
+      totalExecuted.time + "ms"
+    )}`
+  );
 
   // now exit the process
   process.exit(totalExecuted.failed > 0 ? 1 : 0);
 }
 
-export function executePreCommit(commands: string[]) {
+export async function executePreCommit(commands: string[]) {
   // now loop over the huskier array and execute each command
   // we should print [STARTED] command, [STARTED] in yellow color and command in white color
   // if success, we should print [SUCCESS] command, [SUCCESS] in green color and command in white color
@@ -90,6 +132,7 @@ export function executePreCommit(commands: string[]) {
   // we also need to track the execution time of each command and print it in the end
   // we should also print the total execution time of all commands
   // we should also print the total number of commands executed
+  intro("Started executing pre-commit hooks...");
 
   let totalExecuted = {
     commands: 0,
@@ -102,7 +145,8 @@ export function executePreCommit(commands: string[]) {
     const command = commands[index];
     // execute the command
     // print [STARTED] command
-    console.log(
+    const loader = spinner();
+    loader.start(
       colors.yellow("[STARTED]") +
         " " +
         `(${index + 1}/${commands.length}) ` +
@@ -112,7 +156,7 @@ export function executePreCommit(commands: string[]) {
     const time = Date.now();
     try {
       // execute the command using execSync and print the output as well
-      execSync(command, { stdio: "inherit" });
+      execSync(command, {});
 
       // increment the total number of commands executed
       totalExecuted.commands++;
@@ -121,7 +165,7 @@ export function executePreCommit(commands: string[]) {
       // increment the total execution time of all commands
       totalExecuted.time += Date.now() - time;
       // print [SUCCESS] command
-      console.log(
+      loader.stop(
         colors.green("[SUCCESS]") +
           " " +
           `(${index + 1}/${commands.length}) ` +
@@ -137,7 +181,7 @@ export function executePreCommit(commands: string[]) {
       // increment the total execution time of all commands
       totalExecuted.time += Date.now() - time;
       // print [FAILED] command
-      console.log(
+      loader.stop(
         colors.red("[FAILED]") +
           " " +
           `(${index + 1}/${commands.length}) ` +
@@ -150,38 +194,20 @@ export function executePreCommit(commands: string[]) {
     }
   }
 
-  // total commands
-  console.log(
-    colors.whiteBright("Total commands: ") + colors.cyan(commands.length)
+  const result =
+    totalExecuted.failed > 0
+      ? colors.redBright(
+          `${totalExecuted.failed}/${totalExecuted.commands} commands failed`
+        )
+      : colors.greenBright(
+          `${totalExecuted.success}/${totalExecuted.commands} commands succeeded`
+        );
+
+  outro(
+    `Completed execution of ${result} in ${colors.yellow(
+      totalExecuted.time + "ms"
+    )}`
   );
-
-  // print the total number of commands executed
-  console.log(
-    colors.whiteBright("Total executed commands: ") +
-      colors.yellow(totalExecuted.commands)
-  );
-
-  // print the total execution time of all commands
-  console.log(
-    colors.whiteBright("Total execution time: ") +
-      colors.yellow(totalExecuted.time + "ms")
-  );
-
-  if (totalExecuted.success > 0) {
-    // print the total number of success commands
-    console.log(
-      colors.whiteBright("Total success commands: ") +
-        colors.green(totalExecuted.success)
-    );
-  }
-
-  if (totalExecuted.failed > 0) {
-    // print the total number of failed commands
-    console.log(
-      colors.whiteBright("Total failed commands: ") +
-        colors.red(totalExecuted.failed)
-    );
-  }
 
   // now exit the process
   process.exit(totalExecuted.failed > 0 ? 1 : 0);

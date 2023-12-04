@@ -1,6 +1,6 @@
 {
     "name": "@mongez/huskier",
-    "version": "1.1.4",
+    "version": "1.1.5",
     "description": "A wrapper for husky to make it easier to use with a nice summary.",
     "main": "src/index.ts",
     "author": {
@@ -12,6 +12,7 @@
         "huskier": "./huskier"
     },
     "dependencies": {
+        "@clack/prompts": "^0.7.0",
         "@mongez/copper": "^1.0.1",
         "@mongez/fs": "^3.0.4",
         "husky": "^8.0.3"
@@ -22,7 +23,8 @@
         "test": "jest ./tests",
         "test:coverage": "jest ./tests --coverage",
         "test:watch": "jest ./tests --watch",
-        "test:file": "jest"
+        "test:file": "jest",
+        "start": "ts-node ./src/index.ts"
     },
     "devDependencies": {
         "@types/node": "^18.16.3",
