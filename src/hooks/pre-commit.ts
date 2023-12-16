@@ -93,7 +93,7 @@ export async function executePreCommitInParallel(
           `(${result.index + 1}/${commands.length}) ` +
           colors.whiteBright(result.command) +
           " " +
-          colors.gray(`(${result.output})`)
+          colors.bold(colors.whiteBright(`(${result.output})`))
       );
     } else {
       log.success(

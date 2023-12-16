@@ -1,5 +1,5 @@
 import { getJsonFile, putJsonFile } from "@mongez/fs";
-import chalk from "chalk";
+import {colors} from "@mongez/copper";
 import { execSync } from "child_process";
 import { cwd } from "process";
 
@@ -19,13 +19,13 @@ if (!packageJson.huskier) {
     parallel: true,
   };
   console.log(
-    `Added ${chalk.yellow("huskier")} key to ${chalk.yellow(`package.json`)}`
+    `Added ${colors.yellow("huskier")} key to ${colors.yellow(`package.json`)}`
   );
   // save the file
   putJsonFile(cwd() + "/package.json", packageJson);
 } else {
   console.log(
-    `The ${chalk.yellow("huskier")} key already exists in ${chalk.yellow(
+    `The ${colors.yellow("huskier")} key already exists in ${colors.yellow(
       `package.json`
     )}`
   );
