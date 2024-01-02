@@ -125,7 +125,7 @@ export async function executePreCommitInParallel(
     for (let i = 0; i < commandResults.length; i++) {
       const result = commandResults[i];
       if (result.status === "Failed") {
-        console.log(result.output.stderr);
+        console.log(result.output.stdout);
       }
     }
   }
