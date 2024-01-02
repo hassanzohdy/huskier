@@ -14,7 +14,7 @@ interface CommandResult {
   command: string;
   index: number;
   status: string;
-  output: string;
+  output: { stdout: string; stderr: string };
 }
 
 export async function executePreCommitInParallel(
@@ -65,7 +65,7 @@ export async function executePreCommitInParallel(
             command: command,
             index: index,
             status: "Success",
-            output: stdout,
+            output: { stdout: stdout, stderr: "" },
           });
           resolve(null);
         } else {
@@ -74,7 +74,7 @@ export async function executePreCommitInParallel(
             command: command,
             index: index,
             status: "Failed",
-            output: stderr,
+            output: { stdout: stdout, stderr: "" },
           });
           resolve(null);
         }
@@ -93,8 +93,9 @@ export async function executePreCommitInParallel(
           `(${result.index + 1}/${commands.length}) ` +
           colors.whiteBright(result.command) +
           " " +
-          colors.bold(colors.whiteBright(`(${result.output})`))
+          colors.bold(colors.whiteBright(`(${result.output.stderr})`))
       );
+      console.log(result.output.stdout);
     } else {
       log.success(
         colors.green("[SUCCESS]") +
