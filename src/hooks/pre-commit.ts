@@ -74,7 +74,7 @@ export async function executePreCommitInParallel(
             command: command,
             index: index,
             status: "Failed",
-            output: { stdout: stdout, stderr: "" },
+            output: { stdout: stdout, stderr },
           });
           resolve(null);
         }
@@ -95,7 +95,6 @@ export async function executePreCommitInParallel(
           " " +
           colors.bold(colors.whiteBright(`(${result.output.stderr})`))
       );
-      console.log(result.output.stdout);
     } else {
       log.success(
         colors.green("[SUCCESS]") +
@@ -120,6 +119,16 @@ export async function executePreCommitInParallel(
       totalExecuted.time + "ms"
     )}`
   );
+
+  // now display the errors separately
+  if (totalExecuted.failed > 0) {
+    for (let i = 0; i < commandResults.length; i++) {
+      const result = commandResults[i];
+      if (result.status === "Failed") {
+        console.log(result.output.stderr);
+      }
+    }
+  }
 
   // now exit the process
   process.exit(totalExecuted.failed > 0 ? 1 : 0);
