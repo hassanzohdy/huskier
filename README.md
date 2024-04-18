@@ -61,7 +61,28 @@ If you want to execute all commands in parallel, you can use `parallel` option t
 }
 ```
 
-> Starting from version 1.1, parallel is set to `true` by default.
+> parallel option is set to `true` by default.
+
+## Execute series of commands
+
+When `parallel` option is enabled, you could execute multiple commands in `sequence` by grouping them in a nested array.
+
+```json
+{
+  "huskier": {
+    "parallel": true,
+    "pre-commit": [["prettier --write .", "eslint . --fix"], "jest"]
+  }
+}
+```
+
+This will execute jest and prettier in same time, once prettier is finished, eslint will start.
+
+> This option works even if `parallel` is set to `false`.
+
+## Existing commands
+
+Any command fails, it will stop the execution of the rest of the commands, and will show you the error message with exit code `1`.
 
 ## Committing
 

@@ -1,8 +1,8 @@
 import { getJsonFile } from "@mongez/fs";
 import { cwd } from "process";
 import {
-  executePreCommit,
-  executePreCommitInParallel,
+  executeCommandsInParallel,
+  executeCommandsInSequence,
 } from "./hooks/pre-commit";
 import { colors } from "@mongez/copper";
 
@@ -38,8 +38,8 @@ if (staged) {
   const parallel = huskier.parallel ?? true;
 
   if (parallel) {
-    executePreCommitInParallel(huskier.hooks["pre-commit"]);
+    executeCommandsInParallel(huskier.hooks["pre-commit"]);
   } else {
-    executePreCommit(huskier.hooks["pre-commit"]);
+    executeCommandsInSequence(huskier.hooks["pre-commit"]);
   }
 }
