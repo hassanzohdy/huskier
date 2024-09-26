@@ -1,6 +1,6 @@
 {
     "name": "@mongez/huskier",
-    "version": "2.0.0",
+    "version": "3.0.0",
     "description": "A wrapper for husky to make it easier to use with a nice summary.",
     "main": "src/index.ts",
     "author": {
@@ -14,8 +14,8 @@
     "dependencies": {
         "@clack/prompts": "^0.7.0",
         "@mongez/copper": "^1.0.1",
-        "@mongez/fs": "^3.0.4",
-        "husky": "^8.0.3"
+        "@mongez/fs": "^3.0.5",
+        "husky": "^9.1.6"
     },
     "scripts": {
         "fix:test": "eslint --fix -c ./.eslintrc.json ./tests",
